@@ -115,7 +115,7 @@ func setIp(c *netlink.Conn, name string, address net.IPNet) error {
 	req.Data = addrMsg.Serialize()
 
 	ne := netlink.NewAttributeEncoder()
-	ne.Bytes(unix.IFA_LOCAL, address.IP)
+	ne.Bytes(unix.IFA_LOCAL, address.IP[:4])
 
 	msg, err := ne.Encode()
 	if err != nil {
@@ -200,7 +200,8 @@ func main() {
 	const devName = "wg2"
 	fmt.Print("Creating wireguard device...")
 
-	_, n, _ := net.ParseCIDR("192.168.2.1/32")
+	ip, n, _ := net.ParseCIDR("192.168.2.1/24")
+	n.IP = ip.To4()
 	if err := addWg(conn, devName, *n, 1420); err != nil {
 		fmt.Println(err)
 		return
